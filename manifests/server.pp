@@ -1,7 +1,7 @@
 class { 'apache': }
 
-apache::vhost { "${hostname}":
+apache::vhost { "${fqdn}":
   port    => '80',
-  docroot => "${hostname}"
+  docroot => "${fqdn}"
 }
 
