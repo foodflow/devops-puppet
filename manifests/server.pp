@@ -20,11 +20,11 @@ apt::source { 'ubuntugis':
   key_server => 'keyserver.ubuntu.com',
 }
 
-package { 'postgresql-9.1-postgis'
+package { 'postgresql-9.1-postgis':
   ensure => present
 }
 
-package { 'postgresql-contrib-9.1'
+package { 'postgresql-contrib-9.1':
   ensure => present
 }
 
