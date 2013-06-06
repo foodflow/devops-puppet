@@ -1,8 +1,12 @@
 class { 'apache': }
 
+file{ '/var/www/vhosts':
+  ensure => directory
+}
+
 apache::vhost { "${fqdn}":
   port    => '80',
-  docroot => "${fqdn}"
+  docroot => "/var/www/vhosts/${fqdn}"
 }
 
 class { 'apt':
@@ -13,19 +17,40 @@ class { 'apt':
   purge_preferences_d  => false
 }
 
-apt::source { 'ubuntugis':
-  location   => 'http://ppa.launchpad.net/ubuntugis',
-  repos      => 'main',
-  key        => '314DF160',
-  key_server => 'keyserver.ubuntu.com',
+$postgres = [ 'postgresql-9.1-postgis', 'postgresql-contrib-9.1' ]
+
+apt::ppa { 'ppa:ubuntugis/ubuntugis-unstable': }
+->package { $postgres : ensure => present }
+
+->class {'postgresql::server':
+  config_hash => {
+    'ip_mask_deny_postgres_user' => '0.0.0.0/32',
+    'postgres_password' => 'g!sfl0ws',
+    'ipv4acls'          => ['host all ffgis 127.0.0.1/32 md5']
+  }
 }
 
-package { 'postgresql-9.1-postgis':
-  ensure => present
+->postgresql::db{ 'foodflow_gis':
+  user     => 'ffgis',
+  password => 'foodflow'
 }
 
-package { 'postgresql-contrib-9.1':
-  ensure => present
+apt::ppa { 'ppa:voronov84/andreyv': }
+->package { 'pgadmin3': ensure => present }
+
+$tilemill = [ 'tilemill', 'libmapnik', 'nodejs' ]
+
+apt::ppa { 'ppa:developmentseed/mapbox': }
+->package { $tilemill : ensure => present }
+
+->apache::vhost { "tile.${fqdn}":
+  port     => '80',
+  docroot  => "/usr/share/mapbox/export"
+  override => [ 'fileinfo', 'options' ]
 }
 
+include php
+include php::apache2
+
+php::module { 'pgsql': notify => Service['apache2'], }
 
