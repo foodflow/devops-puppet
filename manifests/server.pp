@@ -45,7 +45,7 @@ apt::ppa { 'ppa:developmentseed/mapbox': }
 
 ->apache::vhost { "tile.${fqdn}":
   port     => '80',
-  docroot  => "/usr/share/mapbox/export"
+  docroot  => "/usr/share/mapbox/export",
   override => [ 'fileinfo', 'options' ]
 }
 
