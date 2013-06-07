@@ -1,5 +1,7 @@
 class { 'apache': }
 
+apache::mod { 'rewrite': }
+
 file{ '/var/www/vhosts':
   ensure => directory
 }
@@ -46,11 +48,14 @@ apt::ppa { 'ppa:developmentseed/mapbox': }
 ->apache::vhost { "tile.${fqdn}":
   port     => '80',
   docroot  => "/usr/share/mapbox/export",
-  override => [ 'fileinfo', 'options' ]
+  options  => 'FollowSymLinks',
+  override => [ 'FileInfo', 'Options' ]
 }
 
 include php
 include php::apache2
 
 php::module { 'pgsql': notify => Service['apache2'], }
+
+package { 'phppgadmin': ensure => present }
 
